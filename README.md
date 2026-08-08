@@ -1,12 +1,21 @@
 # DealLens — AI Investment Research & Due-Diligence Workflow Engine
 
 [![DealLens CI Pipeline](https://github.com/Tejas-Raj01/DealLens/actions/workflows/ci.yml/badge.svg)](https://github.com/Tejas-Raj01/DealLens/actions)
+[![Live Backend (Render)](https://img.shields.io/badge/Backend-Render-000000?style=flat&logo=render)](https://deallens-73yw.onrender.com/health)
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.111.0-009688.svg)](https://fastapi.tiangolo.com/)
 [![PostgreSQL pgvector](https://img.shields.io/badge/PostgreSQL-pgvector-336791.svg)](https://github.com/pgvector/pgvector)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14-black.svg)](https://nextjs.org/)
 
 **DealLens** is a production-grade, asynchronous AI backend system designed for automated corporate investment due-diligence and financial document research. It transforms unstructured filings (Annual Reports, 10-Ks, 10-Qs, Investor Presentation Decks) into a structured vector + relational knowledge graph, executing deterministic multi-step due-diligence workflows with strict page-level citation provenance.
+
+---
+
+## 🌐 Live Production Deployments
+
+* **Backend API (Render)**: [https://deallens-73yw.onrender.com](https://deallens-73yw.onrender.com)
+* **Interactive API Docs (OpenAPI / Swagger)**: [https://deallens-73yw.onrender.com/docs](https://deallens-73yw.onrender.com/docs)
+* **API Health Check**: [https://deallens-73yw.onrender.com/health](https://deallens-73yw.onrender.com/health)
 
 ---
 
