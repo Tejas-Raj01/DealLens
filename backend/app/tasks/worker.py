@@ -5,10 +5,12 @@ from sqlalchemy import func
 from app.tasks.celery_app import celery_app
 from app.core.database import SyncSessionLocal
 from app.models.document import Document, DocumentChunk
+from app.models.workflow import WorkflowRun
 from app.services.storage import storage_service
 from app.services.parser import PDFParser
 from app.services.chunker import document_chunker
 from app.services.embedding import embedding_service
+from app.services.workflow_engine import workflow_engine
 
 
 @celery_app.task(bind=True, max_retries=3, default_retry_delay=5)
@@ -89,3 +91,26 @@ def process_document_task(self, document_id_str: str):
 def process_document_sync(document_id_str: str):
     """Synchronous fallback helper for processing documents when Celery worker is offline."""
     process_document_task(document_id_str)
+
+
+@celery_app.task(bind=True, max_retries=2, default_retry_delay=5)
+def execute_workflow_task(self, workflow_run_id_str: str):
+    """
+    Asynchronous Celery task for executing deterministic Due-Diligence Workflows.
+    """
+    run_id = UUID(workflow_run_id_str)
+    db: Session = SyncSessionLocal()
+
+    try:
+        workflow_engine.execute_workflow(db=db, workflow_run_id=run_id)
+        print(f"[Worker] WorkflowRun {run_id} execution completed successfully.")
+    except Exception as exc:
+        print(f"[Worker] Exception in execute_workflow_task for {run_id}: {exc}")
+        raise self.retry(exc=exc)
+    finally:
+        db.close()
+
+
+def execute_workflow_sync(workflow_run_id_str: str):
+    """Synchronous fallback helper for executing workflows when Celery worker is offline."""
+    execute_workflow_task(workflow_run_id_str)
