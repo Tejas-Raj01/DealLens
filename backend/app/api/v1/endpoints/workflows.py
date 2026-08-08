@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.workflow import WorkflowRun, WorkflowStep
 from app.models.report import Report
@@ -45,10 +46,13 @@ async def create_due_diligence_workflow(
     await db.refresh(run)
 
     # Dispatch background execution
-    try:
-        execute_workflow_task.delay(str(run.id))
-    except Exception as e:
-        print(f"[Workflow API] Celery delay failed ({e}), dispatching background execution.")
+    if settings.USE_CELERY:
+        try:
+            execute_workflow_task.delay(str(run.id))
+        except Exception as e:
+            print(f"[Workflow API] Celery delay failed ({e}), dispatching background execution.")
+            background_tasks.add_task(execute_workflow_sync, str(run.id))
+    else:
         background_tasks.add_task(execute_workflow_sync, str(run.id))
 
     # Re-query with loaded steps relationship

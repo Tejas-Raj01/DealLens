@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.models.document import Document, DocumentChunk
 from app.schemas.document import DocumentResponse, DocumentChunkResponse
@@ -72,10 +73,13 @@ async def upload_document(
     await db.refresh(document)
 
     # Dispatch background parsing task via Celery or BackgroundTasks fallback
-    try:
-        process_document_task.delay(str(document.id))
-    except Exception as e:
-        print(f"[Document API] Celery delay failed ({e}), dispatching background execution.")
+    if settings.USE_CELERY:
+        try:
+            process_document_task.delay(str(document.id))
+        except Exception as e:
+            print(f"[Document API] Celery delay failed ({e}), dispatching background execution.")
+            background_tasks.add_task(process_document_sync, str(document.id))
+    else:
         background_tasks.add_task(process_document_sync, str(document.id))
 
     return document

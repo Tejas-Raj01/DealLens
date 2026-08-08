@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     # Redis Settings
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+    USE_CELERY: bool = True
     
     @property
     def REDIS_URL(self) -> str:
