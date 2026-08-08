@@ -2,7 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.core.logging import setup_logging
+from app.middleware.telemetry import TelemetryMiddleware
 from app.api.v1.router import api_router
+
+# Setup structured JSON logging
+setup_logging()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -25,6 +30,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Set Telemetry & Observability Middleware
+app.add_middleware(TelemetryMiddleware)
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
