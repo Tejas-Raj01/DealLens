@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     
     @property
     def REDIS_URL(self) -> str:
+        import os
+        env_redis = os.getenv("REDIS_URL")
+        if env_redis:
+            # Render internal redis URLs might be redis://red-...:6379
+            return env_redis
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
     # Object Storage (MinIO / S3)
