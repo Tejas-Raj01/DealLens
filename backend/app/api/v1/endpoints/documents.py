@@ -1,13 +1,13 @@
 from uuid import UUID
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status, Query, BackgroundTasks, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
 
 from app.core.database import get_db
-from app.models.document import Document
-from app.schemas.document import DocumentResponse
+from app.models.document import Document, DocumentChunk
+from app.schemas.document import DocumentResponse, DocumentChunkResponse
 from app.services.storage import storage_service
 from app.utils.hash import compute_sha256
 from app.tasks.worker import process_document_task, process_document_sync
@@ -131,3 +131,45 @@ async def delete_document(
     await db.delete(document)
     await db.commit()
     return None
+
+
+@router.get("/{document_id}/file")
+async def get_document_file(
+    document_id: UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve raw PDF file stream for inline browser viewing or download."""
+    result = await db.execute(select(Document).where(Document.id == document_id))
+    document = result.scalars().first()
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document with ID {document_id} not found."
+        )
+
+    try:
+        file_bytes = storage_service.get_file(document.file_path)
+        return Response(
+            content=file_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'inline; filename="{document.filename}"'}
+        )
+    except FileNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="PDF file artifact not found in storage."
+        )
+
+
+@router.get("/{document_id}/chunks", response_model=List[DocumentChunkResponse])
+async def get_document_chunks(
+    document_id: UUID,
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve all parsed page-aware text chunks for a document."""
+    result = await db.execute(
+        select(DocumentChunk)
+        .where(DocumentChunk.document_id == document_id)
+        .order_by(DocumentChunk.chunk_index.asc())
+    )
+    return result.scalars().all()
