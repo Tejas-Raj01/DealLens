@@ -9,6 +9,20 @@ from app.api.v1.router import api_router
 # Setup structured JSON logging
 setup_logging()
 
+from sqlalchemy import text
+from app.core.database import async_engine, Base
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Run database initialization on startup
+    async with async_engine.begin() as conn:
+        # 1. Ensure the pgvector extension exists
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+        # 2. Automatically create all tables (so alembic isn't strictly required for first deploy)
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
@@ -19,7 +33,8 @@ app = FastAPI(
     DealLens — AI Investment Research & Due-Diligence System API.
     Provides document ingestion, pgvector hybrid search, strict citation provenance verification,
     and explicit state-machine workflow orchestration for investment due diligence.
-    """
+    """,
+    lifespan=lifespan,
 )
 
 # Set CORS origins
