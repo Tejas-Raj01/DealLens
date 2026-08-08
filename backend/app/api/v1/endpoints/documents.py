@@ -1,6 +1,6 @@
 from uuid import UUID
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Status, Query
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status, Query, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
@@ -10,6 +10,7 @@ from app.models.document import Document
 from app.schemas.document import DocumentResponse
 from app.services.storage import storage_service
 from app.utils.hash import compute_sha256
+from app.tasks.worker import process_document_task, process_document_sync
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -18,6 +19,7 @@ MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024  # 50 MB limit
 
 @router.post("/upload", response_model=DocumentResponse, status_code=status.HTTP_202_ACCEPTED)
 async def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db)
 ):
@@ -69,7 +71,13 @@ async def upload_document(
     await db.commit()
     await db.refresh(document)
 
-    # Trigger background parsing task if worker is active (will be dispatched via task worker)
+    # Dispatch background parsing task via Celery or BackgroundTasks fallback
+    try:
+        process_document_task.delay(str(document.id))
+    except Exception as e:
+        print(f"[Document API] Celery delay failed ({e}), dispatching background execution.")
+        background_tasks.add_task(process_document_sync, str(document.id))
+
     return document
 
 
