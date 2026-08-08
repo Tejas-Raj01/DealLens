@@ -1,0 +1,26 @@
+[
+  {
+    "id": "q1",
+    "question": "What was the revenue growth and gross margin in FY2025?",
+    "expected_document": "annual_report_2025.pdf",
+    "expected_page": 1,
+    "expected_keywords": ["revenue", "+14.2%", "gross margin", "68.5%"],
+    "ground_truth_claim": "Revenue increased by 14.2% YoY with gross margin of 68.5%."
+  },
+  {
+    "id": "q2",
+    "question": "What are the primary regulatory and compliance risk factors?",
+    "expected_document": "annual_report_2025.pdf",
+    "expected_page": 1,
+    "expected_keywords": ["regulatory", "data privacy", "GDPR", "EU AI Act"],
+    "ground_truth_claim": "Compliance with evolving international data privacy regulations including GDPR and EU AI Act."
+  },
+  {
+    "id": "q3",
+    "question": "Is there any discrepancy between investor presentation retention claims and 10-K filings?",
+    "expected_document": "investor_deck_2025.pdf",
+    "expected_page": 1,
+    "expected_keywords": ["retention", "98%", "94%", "NRR", "10-K"],
+    "ground_truth_claim": "Presentation deck claims 98% retention while 10-K discloses 94% NRR."
+  }
+]
