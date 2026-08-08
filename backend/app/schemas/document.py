@@ -18,7 +18,7 @@ class DocumentCreate(DocumentBase):
 class DocumentResponse(DocumentBase):
     id: UUID
     file_hash: str
-    page_count: int
+    page_count: Optional[int] = 0
     status: str
     error_message: Optional[str] = None
     created_at: datetime
