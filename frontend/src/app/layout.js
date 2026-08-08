@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'DealLens — AI Investment Research & Due-Diligence System',
-  description: 'Production AI backend system for corporate due-diligence workflows with strict page provenance citations.',
+  title: 'DealLens — AI Company Research with Verified Sources',
+  description: 'Upload company documents, ask questions, and get answers backed by exact source evidence.',
 };
 
 export default function RootLayout({ children }) {
