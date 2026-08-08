@@ -32,3 +32,28 @@ class ReportResponse(BaseModel):
     citations: List[CitationResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class FindingResponse(BaseModel):
+    id: str
+    title: str
+    category: str  # FINANCIAL, PROFITABILITY, GROWTH, RISK, OPERATIONS, POSITIVE_SIGNAL
+    factual_statement: str
+    interpretation: str
+    why_it_matters: str
+    confidence: float
+    severity: Optional[str] = None
+    source_document: str
+    page: int
+    evidence_text: str
+
+
+class CompanyInvestigationResponse(BaseModel):
+    company_name: str
+    documents_analyzed: int
+    pages_analyzed: int
+    executive_summary: str
+    findings: List[FindingResponse]
+    financial_flow: Dict[str, Any]
+    cross_doc_consistency: List[Dict[str, Any]]
+    unclear_items: List[str]
